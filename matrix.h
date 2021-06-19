@@ -39,5 +39,6 @@ void matrix_add(Matrix* ans, Matrix* a, Matrix* b);
 void matrix_sub(Matrix* ans, Matrix* a, Matrix* b);
 float matrix_trace(Matrix* a);
 int matrix_rank(Matrix* a);
+void matrix_eigenvalues(Matrix* eigenvalues, Matrix* a);
 
 #endif
