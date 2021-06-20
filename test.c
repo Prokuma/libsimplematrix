@@ -43,6 +43,9 @@ int main() {
 
     printf("rankAB: %d\n", matrix_rank(&ab));
     printf("rankAB^-1: %d\n", matrix_rank(&inv_ab));
+    printf("Eigenvalues of AB\n");
+    matrix_eigenvalues(&vectors[0], &ab);
+    print_vector(&vectors[0]);
 
     copy_matrix_from_array(&tmp, rank2_array);
     printf("T\n");
