@@ -48,6 +48,8 @@ void make_identity_matrix(Matrix* matrix);
 void make_upper_triangular_matrix(Matrix* matrix);
 void make_lower_triangular_matrix(Matrix* matrix);
 
-void matrix_convolution(Matrix *ans, Matrix* a, Matrix *kernel);
+int matrix_convolution_output_height(Matrix* a, Matrix* kernel, int padding, int stride);
+int matrix_convolution_output_width(Matrix* a, Matrix* kernel, int padding, int stride);
+void matrix_convolution(Matrix* ans, Matrix* a, Matrix* kernel, int padding, int stride);
 
 #endif

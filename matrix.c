@@ -682,4 +682,60 @@ void make_lower_triangular_matrix(Matrix* matrix){
     }
 }
 
-void matrix_convolution(Matrix *ans, Matrix* a, Matrix *kernel);
+int matrix_convolution_output_height(Matrix* a, Matrix* kernel, int padding, int stride){
+    return ((a->row + 2 * padding - kernel->row) / stride) + 1;
+}
+
+int matrix_convolution_output_width(Matrix* a, Matrix* kernel, int padding, int stride){
+    return ((a->column + 2 * padding - kernel->column) / stride) + 1;
+}
+
+void matrix_convolution(Matrix* ans, Matrix* a, Matrix* kernel, int padding, int stride){
+    int i, j, k, m, sum, o_h, o_w;
+    Matrix p, tmp, tmp2;
+
+    if(stride < 1){
+        return;
+    }
+
+    o_h = matrix_convolution_output_height(a, kernel, padding, stride); 
+    o_w = matrix_convolution_output_width(a, kernel, padding, stride);
+
+    if(ans->row != o_h || ans->column != o_w){
+        return;
+    }
+
+    initialize_matrix(&p, a->row + padding, a->column + 2);
+    for(i = 0; i < a->row; i++){
+        for(j = 0; j < a->column; j++){
+            p.data[i + padding][j + padding] = a->data[i][j];
+        }
+    }
+    
+    initialize_matrix(&tmp, kernel->row, kernel->column);
+    initialize_matrix(&tmp2, kernel->row, kernel->column);
+    for(i = 0; i < o_h; i += stride){
+        for(j = 0; j < o_w; j += stride){
+            for(k = 0; k < kernel->row; k++){
+                for(m = 0; m < kernel->column; m++){
+                    tmp.data[k][m] = a->data[k + i][k + j];
+                }
+            } 
+
+            matrix_hadamard_product(&tmp2, &tmp, kernel);
+
+            sum = 0;
+            for(k = 0; k < kernel->row; k++){
+                for(m = 0; m < kernel->row; m++){
+                    sum += tmp2.data[k][m];
+                }
+            }
+
+            ans->data[i][j] = sum;
+        }
+    }
+
+    free_matrix(&p);
+    free_matrix(&tmp);
+    free_matrix(&tmp2);
+}
