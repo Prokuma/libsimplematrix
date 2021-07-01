@@ -43,10 +43,15 @@ void matrix_hadamard_product(Matrix *ans, Matrix *a, Matrix *b);
 float matrix_trace(Matrix* a);
 int matrix_rank(Matrix* a);
 void matrix_eigenvalues(Vector* eigenvalues, Matrix* a);
+float matrix_max(Matrix* a);
+float matrix_min(Matrix* a);
+void matrix_exp(Matrix* ans, Matrix *a);
+float matrix_sum(Matrix* a);
 
 void make_identity_matrix(Matrix* matrix);
 void make_upper_triangular_matrix(Matrix* matrix);
 void make_lower_triangular_matrix(Matrix* matrix);
+void matrix_fill(Matrix* matrix, float num);
 
 int matrix_convolution_output_height(Matrix* a, Matrix* kernel, int padding, int stride);
 int matrix_convolution_output_width(Matrix* a, Matrix* kernel, int padding, int stride);

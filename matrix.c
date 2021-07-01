@@ -619,6 +619,69 @@ void matrix_QR(Matrix* matrix){
     free(v);
 }
 
+float matrix_max(Matrix* a){
+    int i, j, max;
+
+    if(a->row == 0 || a->column == 0){
+        return -1;
+    }
+
+    max = a->data[0][0];
+
+    for(i = 0; i < a->row; i++){
+        for(j = 0; j < a->column; j++){
+            max = MAX(max, a->data[i][j]);
+        }
+    }
+
+    return max;
+}
+
+float matrix_min(Matrix* a){
+    int i, j, min;
+
+    if(a->row == 0 || a->column == 0){
+        return -1;
+    }
+
+    min = a->data[0][0];
+
+    for(i = 0; i < a->row; i++){
+        for(j = 0; j < a->column; j++){
+            min = MIN(min, a->data[i][j]);
+        }
+    }
+
+    return min;
+}
+
+void matrix_exp(Matrix* ans, Matrix *a){
+    int i, j;
+    
+    if(ans->row != a->row || ans->column != a->column){
+        return;
+    }
+
+    for(i = 0; i < a->row; i++){
+        for(j = 0; j < a->column; j++){
+            ans->data[i][j] = exp(a->data[i][j]);
+        }
+    }
+}
+
+float matrix_sum(Matrix* a){
+    float sum = 0;
+    int i, j;
+
+    for(i = 0; i < a->row; i++){
+        for(j = 0; j < a->column; j++){
+            sum += a->data[i][j];
+        }
+    }
+
+    return sum;
+}
+
 void matrix_eigenvalues(Vector* eigenvalues, Matrix* a){
     int i, j, k;
     Matrix tmp;
@@ -678,6 +741,16 @@ void make_lower_triangular_matrix(Matrix* matrix){
     for(i = 0; i < matrix->row; i++){
         for(j = 0; j < matrix->column; j++){
             matrix->data[i][j] = (i <= j) ? 1 : 0;
+        }
+    }
+}
+
+void matrix_fill(Matrix* matrix, float num){
+    int i, j;
+
+    for(i = 0; i < matrix->row; i++){
+        for(j = 0; j < matrix->column; j++){
+            matrix->data[i][j] = num;
         }
     }
 }
