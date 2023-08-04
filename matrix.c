@@ -4,11 +4,22 @@
 #include <math.h>
 #include <stdarg.h>
 #include <string.h>
+#ifdef USE_MP
+#include <omp.h>
+#endif
 
 #define EPS 1e-8
 #define ITER_MAX 100
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
+
+void print_compile_info(){
+    printf("Compile Options: ");
+    #ifdef USE_MP
+    printf("OpenMP");
+    #endif
+    printf("\n");
+}
 
 void initialize_vector(Vector* vector, int size){
     int i;
@@ -63,8 +74,6 @@ float vector_get(Vector *a, int n){
 }
 
 void vector_add(Vector *ans, Vector *a, Vector *b){
-    int i;
-
     if(a->size != b->size){
         return;
     }
@@ -72,14 +81,15 @@ void vector_add(Vector *ans, Vector *a, Vector *b){
         return;
     }
 
-    for(i = 0; i < a->size; i++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < a->size; i++){
         ans->data[i] = a->data[i] + b->data[i];
     }
 }
 
 void vector_sub(Vector *ans, Vector *a, Vector *b){
-    int i;
-
     if(a->size != b->size){
         return;
     }
@@ -87,7 +97,10 @@ void vector_sub(Vector *ans, Vector *a, Vector *b){
         return;
     }
 
-    for(i = 0; i < a->size; i++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < a->size; i++){
         ans->data[i] = a->data[i] - b->data[i];
     }
 }
@@ -169,16 +182,18 @@ float matrix_get(Matrix* a, int n, int m){
 
 //Dot of Matrix
 void matrix_dot(Matrix* ans, Matrix* a, Matrix* b){
-    int i, j, k;
     initialize_matrix(ans, a->row, b->column);
 
     if(a->column != b->row || a->row != ans->row || b->column != ans->column){
         return;
     }
 
-    for(i = 0; i < a->row; i++){
-        for(j = 0; j < b->column; j++){
-            for(k = 0; k < a->column; k++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < a->row; i++){
+        for(int j = 0; j < b->column; j++){
+            for(int k = 0; k < a->column; k++){
                 ans->data[i][j] += a->data[i][k] * b->data[k][j];
             }
         }
@@ -228,28 +243,30 @@ float matrix_determinant(Matrix* a){
 }
 
 void matrix_transpose(Matrix* ans, Matrix* a){
-    int i, j;
-
     if(a->row != ans->column || a->column != ans->row){
         return;
     }
 
-    for(i = 0; i < a->row; i++){
-        for(j = 0; j < a->column; j++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < a->row; i++){
+        for(int j = 0; j < a->column; j++){
             ans->data[j][i] = a->data[i][j];
         }
     }
 }
 
 void matrix_cMul(Matrix* ans, Matrix* a, float c){
-    int i, j;
-    
     if(a->row != ans->row || a->column != ans->column){
         return;
     }
 
-    for(i = 0; i < a->row; i++){
-        for(j = 0; j < a->column; j++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < a->row; i++){
+        for(int j = 0; j < a->column; j++){
             ans->data[i][j] = c * a->data[i][j];
         }
     }
@@ -258,7 +275,6 @@ void matrix_cMul(Matrix* ans, Matrix* a, float c){
 void matrix_inverse(Matrix *ans, Matrix* a){
     float det;
     Matrix mMatrix, tmp, tmp2;
-    int i, j, x, y;
 
     if(a->row != a->column){
         return;
@@ -270,10 +286,13 @@ void matrix_inverse(Matrix *ans, Matrix* a){
     initialize_matrix(&tmp, a->row, a->column);
     initialize_matrix(&tmp2, a->row, a->column);
     initialize_matrix(&mMatrix, a->row - 1, a->column - 1);
-    for(i = 0; i < a->row; i++){
-        for(j = 0; j < a->column; j++){
-            for(x = 0; x < a->row - 1; x++){
-                for(y = 0; y < a->row -1; y++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < a->row; i++){
+        for(int j = 0; j < a->column; j++){
+            for(int x = 0; x < a->row - 1; x++){
+                for(int y = 0; y < a->row -1; y++){
                     if(i > x){
                         if(j > y){
                             mMatrix.data[x][y] = a->data[x][y];
@@ -300,15 +319,16 @@ void matrix_inverse(Matrix *ans, Matrix* a){
 
 //addition between matrix
 void matrix_add(Matrix* ans, Matrix* a, Matrix* b){
-    int i,j;
-
     if(a->row != b->row || a->column != b->column || 
             ans->row != a->row || ans->column != a->column){
         return;
     }
 
-    for(i = 0; i < a->row; i++){
-        for(j = 0; j < a->column; j++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < a->row; i++){
+        for(int j = 0; j < a->column; j++){
             ans->data[i][j] = a->data[i][j] + b->data[i][j];
         }
     }
@@ -316,23 +336,22 @@ void matrix_add(Matrix* ans, Matrix* a, Matrix* b){
 
 //substraction between matrix
 void matrix_sub(Matrix* ans, Matrix* a, Matrix* b){
-    int i,j;
-
     if(a->row != b->row || a->column != b->column || 
             ans->row != a->row || ans->column != a->column){
         return;
     }
 
-    for(i = 0; i < a->row; i++){
-        for(j = 0; j < a->column; j++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < a->row; i++){
+        for(int j = 0; j < a->column; j++){
             ans->data[i][j] = a->data[i][j] - b->data[i][j];
         }
     }
 }
 
 void matrix_hadamard_product(Matrix *ans, Matrix *a, Matrix *b){
-    int i, j;
-
     if(a->row != b->row || a->column != b->column){
         return;
     }
@@ -340,8 +359,11 @@ void matrix_hadamard_product(Matrix *ans, Matrix *a, Matrix *b){
         return;
     }
 
-    for(i = 0; i < a->row; i++){
-        for(j = 0; j < a->column; j++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < a->row; i++){
+        for(int j = 0; j < a->column; j++){
             ans->data[i][j] = a->data[i][j] * b->data[i][j];
         }
     }
@@ -416,7 +438,6 @@ void matrix_sort(Matrix* matrix){
 void matrix_reduce(Matrix* matrix, int column){
     int i, j, start_row = 0, end_row = matrix->column - 1;
     float t;
-    float* tmp; 
 
     matrix_sort(matrix);
     for(i = 0; i < column; i++){
@@ -683,7 +704,6 @@ float matrix_sum(Matrix* a){
 }
 
 void matrix_eigenvalues(Vector* eigenvalues, Matrix* a){
-    int i, j, k;
     Matrix tmp;
     
     if(a->row != a->column){
@@ -698,7 +718,7 @@ void matrix_eigenvalues(Vector* eigenvalues, Matrix* a){
 
     matrix_householder_transform(&tmp);
     matrix_QR(&tmp);
-    for(i = 0; i < eigenvalues->size; i++){
+    for(int i = 0; i < eigenvalues->size; i++){
         eigenvalues->data[i] = tmp.data[i][i];
     }
 }
@@ -764,7 +784,7 @@ int matrix_convolution_output_width(Matrix* a, Matrix* kernel, int padding, int 
 }
 
 void matrix_convolution(Matrix* ans, Matrix* a, Matrix* kernel, int padding, int stride){
-    int i, j, k, m, sum, o_h, o_w;
+    int sum, o_h, o_w;
     Matrix p, tmp, tmp2;
 
     if(stride < 1){
@@ -779,18 +799,23 @@ void matrix_convolution(Matrix* ans, Matrix* a, Matrix* kernel, int padding, int
     }
 
     initialize_matrix(&p, a->row + padding, a->column + 2);
-    for(i = 0; i < a->row; i++){
-        for(j = 0; j < a->column; j++){
+
+    for(int i = 0; i < a->row; i++){
+        for(int j = 0; j < a->column; j++){
             p.data[i + padding][j + padding] = a->data[i][j];
         }
     }
     
     initialize_matrix(&tmp, kernel->row, kernel->column);
     initialize_matrix(&tmp2, kernel->row, kernel->column);
-    for(i = 0; i < o_h; i += stride){
-        for(j = 0; j < o_w; j += stride){
-            for(k = 0; k < kernel->row; k++){
-                for(m = 0; m < kernel->column; m++){
+
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < o_h; i += stride){
+        for(int j = 0; j < o_w; j += stride){
+            for(int k = 0; k < kernel->row; k++){
+                for(int m = 0; m < kernel->column; m++){
                     tmp.data[k][m] = a->data[k + i][k + j];
                 }
             } 
@@ -798,8 +823,8 @@ void matrix_convolution(Matrix* ans, Matrix* a, Matrix* kernel, int padding, int
             matrix_hadamard_product(&tmp2, &tmp, kernel);
 
             sum = 0;
-            for(k = 0; k < kernel->row; k++){
-                for(m = 0; m < kernel->row; m++){
+            for(int k = 0; k < kernel->row; k++){
+                for(int m = 0; m < kernel->row; m++){
                     sum += tmp2.data[k][m];
                 }
             }

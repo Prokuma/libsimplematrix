@@ -14,6 +14,7 @@ int main() {
     float image_array[25] = {0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 5, 5, 5, 5, 5,
                             1, 1, 1, 1, 1, 0, 0, 0, 0, 0};
 
+    print_compile_info();
     initialize_matrix(&a, 3, 3);
     initialize_matrix(&b, 3, 3);
     initialize_matrix(&ab, 3, 3);

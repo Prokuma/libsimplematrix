@@ -1,39 +1,43 @@
 #include "nn.h"
 #include <math.h>
+#ifdef USE_MP
+#include <omp.h>
+#endif
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 void nn_forward_sigmoid(Matrix *output, Matrix *input){
-    int i, j;
-
     if(input->row != output->row || input->column != output->column){
         return;
     }
 
-    for(i = 0; i < input->row; i++){
-        for(j = 0; j < input->column; j++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < input->row; i++){
+        for(int j = 0; j < input->column; j++){
             output->data[i][j] = 1 / (1 + exp(-input->data[i][j]));
         }
     }
 }
 
 void nn_forward_lelu(Matrix *output, Matrix *input){
-    int i, j;
-
     if(input->row != output->row || input->column != output->column){
         return;
     }
 
-    for(i = 0; i < input->row; i++){
-        for(j = 0; j < input->column; j++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < input->row; i++){
+        for(int j = 0; j < input->column; j++){
             output->data[i][j] = MAX(0, input->data[i][j]);
         }
     }
 }
 
 void nn_forward_softmax(Matrix *output, Matrix *input){
-    int i, j;
     float c, sum;
     Matrix tmp;
     
@@ -49,8 +53,11 @@ void nn_forward_softmax(Matrix *output, Matrix *input){
     matrix_exp(&tmp, &tmp);
     sum = matrix_sum(&tmp);
 
-    for(i = 0; i < input->row; i++){
-        for(j = 0; j < input->column; j++){
+    #ifdef USE_MP
+    #pragma omp parallel for
+    #endif
+    for(int i = 0; i < input->row; i++){
+        for(int j = 0; j < input->column; j++){
             output->data[i][j] = exp(tmp.data[i][j]) / sum;
         }
     }

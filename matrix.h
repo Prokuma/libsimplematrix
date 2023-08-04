@@ -11,6 +11,8 @@ typedef struct matrix{
 	float** data;
 } Matrix;
 
+void print_compile_info();
+
 void initialize_vector(Vector* vector, int size);
 void free_vector(Vector *vector);
 void print_vector(Vector *vector);
